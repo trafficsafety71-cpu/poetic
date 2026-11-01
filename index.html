@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أشعارية الحوادث الجسيمة</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
+<style>
+:root {
+  --spacing-1: 0.25rem; --spacing-2: 0.5rem; --spacing-3: 0.75rem; --spacing-4: 1rem; --spacing-6: 1.5rem;
+  --background: #eef1f6; --foreground: #1f2933; --surface: #ffffff; --surface-foreground: #1f2933;
+  --card: #ffffff; --card-foreground: #1f2933; --primary: #1a5fb4; --primary-foreground: #ffffff;
+  --secondary: #e4e9f2; --secondary-foreground: #1f2933; --accent: #dbe7fb; --accent-foreground: #17407a;
+  --muted: #f4f6fa; --muted-foreground: #5b6675; --error: #c62828; --error-foreground: #ffffff;
+  --success: #2e7d4f; --border: #d5dbe5;
+  --font-family-base: 'Tajawal', system-ui, sans-serif;
+  --shadow: 0 1px 2px rgba(20, 30, 50, 0.06); --shadow-md: 0 4px 14px rgba(20, 30, 50, 0.08);
+  --radius-sm: 6px; --radius: 10px; --radius-md: 12px; --radius-lg: 16px; --radius-full: 9999px;
+}
+.dark {
+  --background: #111418; --foreground: #e6e9ef; --surface: #1a1e24; --surface-foreground: #e6e9ef;
+  --card: #1c2129; --card-foreground: #e6e9ef; --primary: #8ab4f8; --primary-foreground: #0d1b2e;
+  --secondary: #262c36; --secondary-foreground: #e6e9ef; --accent: #223a5e; --accent-foreground: #cfe0ff;
+  --muted: #20252d; --muted-foreground: #a3adbb; --error: #ff8a80; --error-foreground: #2a0d0b;
+  --success: #6fcf97; --border: #353c47;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4); --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--background); }
+
+.root {
+  min-height: 100vh; box-sizing: border-box; padding: var(--spacing-4);
+  background: var(--background); color: var(--foreground);
+  font-family: var(--font-family-base); direction: rtl; text-align: right;
+}
+.container {
+  max-width: 650px; margin: 0 auto; padding: var(--spacing-6);
+  background: var(--card); color: var(--card-foreground);
+  border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+}
+.themeRow { display: flex; justify-content: flex-start; margin-bottom: var(--spacing-2); }
+.themeToggle {
+  width: 48px; height: 48px; padding: 0; border-radius: 50%;
+  border: 2px solid #4f9e83; background: var(--surface); color: var(--foreground);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.logo { display: flex; justify-content: center; margin-bottom: var(--spacing-1); }
+.logo img { width: 70px; height: auto; }
+.title { text-align: center; font-size: 18px; font-weight: 800; margin: var(--spacing-1) 0 var(--spacing-4); }
+
+.dateSection {
+  padding: var(--spacing-3); border-radius: var(--radius); margin-bottom: var(--spacing-4);
+  border: 1px solid color-mix(in srgb, var(--error) 35%, transparent);
+  background: color-mix(in srgb, var(--error) 8%, var(--card));
+}
+.dateRow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--spacing-2); }
+.dateField { display: flex; flex-direction: column; gap: 4px; }
+.dateLabel { font-size: 12px; font-weight: 700; color: var(--error); }
+.dateSummary {
+  margin-top: var(--spacing-2); display: flex; justify-content: center; align-items: center;
+  gap: var(--spacing-2); font-weight: 800; font-size: 15px; color: var(--error);
+}
+.weekday {
+  padding: 2px 10px; border-radius: var(--radius-full);
+  background: var(--error); color: var(--error-foreground); font-size: 13px;
+}
+.timeRow {
+  margin-top: var(--spacing-2); color: var(--error); font-weight: 700; font-size: 14px;
+  display: flex; justify-content: center; align-items: center; gap: var(--spacing-2);
+}
+.timeInput { width: auto; padding: 2px 8px; }
+
+.sectionTitle {
+  background: var(--accent); color: var(--accent-foreground); padding: 10px;
+  margin: 20px 0 10px 0; border-right: 4px solid var(--primary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-weight: 700; font-size: 14px;
+}
+.sectionTitleFirst { margin-top: 0; }
+.field { margin-bottom: 12px; }
+.label { display: block; font-weight: 700; margin-bottom: 5px; font-size: 13px; }
+.otherInput { margin-top: 6px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.ctl {
+  width: 100%; padding: 9px 10px; font: inherit; font-size: 15px;
+  color: var(--foreground); background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  direction: rtl; text-align: right;
+}
+.ctl:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent); }
+textarea.ctl { resize: vertical; }
+.tallTextarea { height: 80px; }
+.shortTextarea { height: 60px; }
+.hint { display: block; margin-top: 5px; font-size: 11px; color: var(--muted-foreground); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  font: inherit; font-weight: 700; cursor: pointer; border-radius: var(--radius);
+  border: 1px solid transparent; padding: 10px 16px; font-size: 15px;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btnPrimary { background: var(--primary); color: var(--primary-foreground); }
+.btnOutline { background: var(--surface); color: var(--foreground); border-color: var(--border); }
+.btnSecondary { background: var(--secondary); color: var(--foreground); }
+.btnDanger { background: var(--error); color: var(--error-foreground); }
+.btnIcon { width: 24px; height: 24px; padding: 0; border-radius: 50%; font-size: 16px; line-height: 1; }
+.wide { width: 100%; }
+
+.partyBox {
+  position: relative; border: 1px solid var(--border); padding: 15px;
+  border-radius: var(--radius-md); margin-bottom: 20px; background: var(--muted);
+}
+.removeBtn { position: absolute; left: 10px; top: 12px; z-index: 5; }
+.companionItem {
+  position: relative; margin-top: 10px; padding: 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: color-mix(in srgb, #673ab7 10%, var(--card));
+}
+.companionRemove { width: 20px; height: 20px; top: 5px; left: 5px; }
+.addCompBtn { margin-top: 10px; background: #673ab7; color: #ffffff; }
+
+.mapWrap { position: relative; }
+.mapFull { position: fixed; inset: 0; z-index: 2100; background: var(--background); padding: 0; }
+.mapFull .map { height: 100%; margin-top: 0; border: none; border-radius: 0; }
+.mapToggle {
+  position: absolute; top: 80px; left: 10px; z-index: 1000; width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center; padding: 0;
+  border-radius: 4px; border: 2px solid rgba(0, 0, 0, 0.2);
+  background: var(--surface); color: var(--foreground); font-size: 22px; line-height: 1; cursor: pointer;
+}
+.map {
+  position: relative; overflow: hidden; direction: ltr; touch-action: none; cursor: grab;
+  height: 400px; width: 100%; margin-top: 10px; border-radius: var(--radius);
+  border: 2px solid var(--primary); background: #dfe6ee; user-select: none;
+}
+.mapLayer { position: absolute; inset: 0; }
+.mapTile { position: absolute; width: 256px; height: 256px; pointer-events: none; user-select: none; }
+.mapMarker {
+  position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%;
+  background: #c62828; border: 2px solid #ffffff; box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+  pointer-events: none; z-index: 2;
+}
+.mapZoom {
+  position: absolute; top: 10px; left: 10px; z-index: 4; display: flex; flex-direction: column;
+  border-radius: 4px; overflow: hidden; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.mapCtrl {
+  width: 30px; height: 30px; padding: 0; border: 0; background: #ffffff; color: #111111;
+  font-size: 18px; font-weight: 700; line-height: 1; cursor: pointer;
+}
+.mapCtrl + .mapCtrl { border-top: 1px solid #cccccc; }
+.mapAttr {
+  position: absolute; right: 0; bottom: 0; z-index: 4; padding: 1px 5px; font-size: 10px;
+  background: rgba(255, 255, 255, 0.85); color: #333333; direction: ltr;
+}
+
+.copyBtn { width: 100%; margin-top: 25px; padding: 15px; font-size: 16px; }
+.previewBtn { width: 100%; margin-top: 10px; padding: 12px; }
+.clearBtn { width: 100%; margin-top: 10px; padding: 10px; font-size: 14px; }
+.footer { text-align: center; font-size: 10px; margin-top: 20px; font-weight: 700; color: var(--error); }
+
+.fullscreen {
+  position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column;
+  background: var(--background); color: var(--foreground); direction: rtl; text-align: right;
+}
+.fsHeader {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--card);
+}
+.fsTitle { font-size: 16px; font-weight: 800; }
+.fsBody {
+  flex: 1; overflow-y: auto; padding: 16px; white-space: pre-wrap;
+  font-family: var(--font-family-base); font-size: 15px; line-height: 1.9;
+}
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  max-width: calc(100% - 32px); padding: 10px 16px; border-radius: var(--radius);
+  background: var(--success); color: #ffffff; font-weight: 700; box-shadow: var(--shadow-md);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 3000;
+}
+.toast.show { opacity: 1; }
+.toast.error { background: var(--error); }
+</style>
+</head>
+<body>
+<div class="root" id="root">
+  <div class="container">
+    <div class="themeRow">
+      <button type="button" class="themeToggle" id="themeBtn"></button>
+    </div>
+
+    <div class="logo">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/77/General_Department_of_Traffic_of_Saudi_Arabia.svg" alt="شعار المرور">
+    </div>
+
+    <h2 class="title">أشعارية الحوادث الجسيمة</h2>
+
+    <div class="dateSection">
+      <div class="dateRow">
+        <div class="dateField">
+          <span class="dateLabel">اليوم</span>
+          <select class="ctl" id="hDay"></select>
+        </div>
+        <div class="dateField">
+          <span class="dateLabel">الشهر</span>
+          <select class="ctl" id="hMonth"></select>
+        </div>
+        <div class="dateField">
+          <span class="dateLabel">السنة</span>
+          <select class="ctl" id="hYear"></select>
+        </div>
+      </div>
+      <div class="dateSummary" id="dateSummary"></div>
+      <div class="timeRow">
+        وقت الحادث:
+        <input type="time" class="ctl timeInput" id="time">
+      </div>
+    </div>
+
+    <div class="sectionTitle">بيانات الحادث</div>
+    <div class="field">
+      <label class="label" for="locDesc">وصف الموقع:</label>
+      <input class="ctl" type="text" id="locDesc" placeholder="حي بدر شارع ابو بكر الصديق بأتجاه الشمال …">
+    </div>
+    <div class="field">
+      <label class="label" for="incType">نوع الحادث:</label>
+      <input class="ctl" type="text" id="incType" placeholder="تصادم دهس صدم جسم ثابت …">
+    </div>
+
+    <div id="parties"></div>
+
+    <button type="button" class="btn btnOutline wide" id="addParty">+ إضافة طرف جديد</button>
+
+    <div class="sectionTitle">وصف الحادث</div>
+    <textarea class="ctl tallTextarea" id="desc" placeholder="اثناء سير الطرف الاول على الطريق وكان قادم من الشرق الى الغرب …"></textarea>
+
+    <div class="sectionTitle">نتائج الحادث</div>
+    <textarea class="ctl shortTextarea" id="results" placeholder="اصابة الطرف الاول نقل على اثرها الى مستشفى …"></textarea>
+
+    <div class="field">
+      <label class="label" for="link">رابط موقع الحادث:</label>
+      <input class="ctl" type="text" id="link" placeholder="سيتم تحديث الرابط عند الضغط على الخريطة">
+      <span class="hint">انقر على موقع الحادث في الخريطة أدناه لتحديده تلقائياً:</span>
+      <div class="mapWrap" id="mapWrap">
+        <div class="map" id="map">
+          <div class="mapLayer" id="mapLayer"></div>
+          <div class="mapMarker" id="mapMarker" hidden></div>
+          <div class="mapZoom">
+            <button type="button" class="mapCtrl" id="zoomIn" aria-label="تكبير">+</button>
+            <button type="button" class="mapCtrl" id="zoomOut" aria-label="تصغير">&minus;</button>
+          </div>
+          <div class="mapAttr">© OpenStreetMap</div>
+        </div>
+        <button type="button" class="mapToggle" id="mapToggle" aria-label="ملء الشاشة"></button>
+      </div>
+    </div>
+
+    <div class="sectionTitle">الاجراءات المتخذة</div>
+    <div class="field">
+      <label class="label" for="bashir">رقم الحادث في نظام باشر:</label>
+      <input class="ctl" type="text" id="bashir" placeholder="رقم الحادث">
+    </div>
+
+    <button type="button" class="btn btnPrimary copyBtn" id="copyBtn">نسخ الإشعارية</button>
+    <button type="button" class="btn btnOutline previewBtn" id="previewBtn">معاينة الإشعارية</button>
+    <button type="button" class="btn btnDanger clearBtn" id="clearBtn">مسح جميع الحقول</button>
+
+    <div class="footer">أعداد: علي الغامدي</div>
+  </div>
+
+  <div class="fullscreen" id="fullscreen" hidden>
+    <div class="fsHeader">
+      <span class="fsTitle">معاينة الإشعارية</span>
+      <button type="button" class="btn btnSecondary btnIcon" id="fsClose" aria-label="إغلاق">×</button>
+    </div>
+    <div class="fsBody" id="fsBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ARABIC_ORDINALS = ["الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس", "السابع", "الثامن", "التاسع", "العاشر"];
+const DAY_NAMES = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+const MAX_PARTIES = 10;
+const OTHER = "__other";
+
+const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
+const HIJRI_DAYS = range(1, 31);
+const HIJRI_MONTHS = range(1, 12);
+const HIJRI_YEARS = range(1447, 1460);
+
+const PARTY_TYPES = ["مركبة", "مشاة", "دراجة نارية", "دراجة هوائية", "سكوتر", "جسم ثابت", "حيوان"];
+const INJURY_OPTIONS = ["لا يوجد", "يوجد", "أصابة بسيطة", "أصابة متوسطة", "أصابة بليغة", "وفاه", "وفاه في الموقع"];
+const INSURANCE_OPTIONS = ["يوجد", "لا يوجد"];
+const RESPONSIBILITY_OPTIONS = ["0٪", "25٪", "50٪", "75٪", "100٪"];
+
+const MOON_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const SUN_SVG = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>';
+const EXPAND_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>';
+
+let uid = 0;
+const nextId = () => "k" + (++uid);
+const newCompanion = () => ({ id: nextId(), name: "", nat: "", idNum: "", injury: "لا يوجد" });
+const newParty = () => ({
+  id: nextId(), type: "مركبة", car: "", plate: "", name: "", nat: "", idNum: "",
+  injury: "لا يوجد", ins: "يوجد", resp: "0٪", companions: [],
+});
+
+const pad = n => String(n).padStart(2, "0");
+const $ = id => document.getElementById(id);
+
+// دالة صغيرة لإنشاء العناصر بأمان (تستخدم textContent ولا تُدخل HTML من المستخدم)
+function el(tag, props = {}, ...children) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === "className") n.className = v;
+    else if (k === "text") n.textContent = v;
+    else if (k === "value") n.value = v;
+    else if (k === "disabled" || k === "hidden") n[k] = v;
+    else if (k.startsWith("on")) n.addEventListener(k.slice(2).toLowerCase(), v);
+    else n.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c === null || c === undefined) continue;
+    n.append(c instanceof Node ? c : document.createTextNode(c));
+  }
+  return n;
+}
+
+const HIJRI_FORMAT = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn", {
+  day: "numeric", month: "numeric", year: "numeric",
+});
+
+// يحسب السنة والشهر واليوم الهجري لتاريخ ميلادي
+function getHijriParts(date) {
+  const parts = HIJRI_FORMAT.formatToParts(date);
+  const get = t => parseInt((parts.find(p => p.type === t) || {}).value || "0", 10);
+  return { y: get("year"), m: get("month"), d: get("day") };
+}
+
+// يحوّل التاريخ الهجري إلى ميلادي للحصول على اسم اليوم
+function hijriToGregorian(y, m, d) {
+  const base = new Date();
+  base.setHours(12, 0, 0, 0);
+  const cur = getHijriParts(base);
+  const approx = Math.round((y - cur.y) * 354.37 + (m - cur.m) * 29.53 + (d - cur.d));
+  const start = base.getTime() + approx * 86400000;
+  for (let i = -40; i <= 40; i++) {
+    const candidate = new Date(start + i * 86400000);
+    const h = getHijriParts(candidate);
+    if (h.y === y && h.m === m && h.d === d) return candidate;
+  }
+  return null;
+}
+
+function weekdayName() {
+  const g = hijriToGregorian(S.hYear, S.hMonth, S.hDay);
+  return g ? DAY_NAMES[g.getDay()] : "";
+}
+
+function hijriDateStr() {
+  return `${S.hYear}/${pad(S.hMonth)}/${pad(S.hDay)}هـ`;
+}
+
+function nowHHMM() {
+  const now = new Date();
+  return `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+
+function formatTime12h(t) {
+  if (!t) return "";
+  const [hStr, m] = t.split(":");
+  const h = parseInt(hStr, 10);
+  return `${h % 12 || 12}:${m} ${h >= 12 ? "مساءً" : "صباحاً"}`;
+}
+
+// الهوية إذا بدأ الرقم بـ 1، والجواز إذا بدأ بحرف إنجليزي، وغير ذلك الإقامة
+function getIdTypeLabel(val) {
+  if (!val) return "رقم الهوية";
+  const first = val.trim().charAt(0);
+  if (/[a-zA-Z]/.test(first)) return "رقم الجواز";
+  if (first === "1") return "رقم الهوية";
+  return "رقم الإقامة";
+}
+
+const dash = v => v || "---";
+const kindOf = t => (PARTY_TYPES.includes(t) ? t : "مركبة");
+
+function buildPartyText(p, index) {
+  const kind = kindOf(p.type);
+  const label = dash(p.type);
+  let text = `*الطرف ${ARABIC_ORDINALS[index]}:*\n`;
+  if (kind === "مركبة" || kind === "دراجة نارية") {
+    text += `${label} من نوع ${dash(p.car)}\nلوحة رقم (${dash(p.plate)})\nبقيادة المدعو/ ${dash(p.name)}\nالجنسية/ ${dash(p.nat)}\n${getIdTypeLabel(p.idNum)}/ ${p.idNum || "---"}\nالإصابة/ ${dash(p.injury)}\nالتأمين/ ${dash(p.ins)}\nنسبة التحمل : ${p.resp}\n`;
+  } else if (kind === "مشاة") {
+    text += `مشاة :-\nالاسم/ ${dash(p.name)}\nالجنسية/ ${dash(p.nat)}\n${getIdTypeLabel(p.idNum)}/ ${p.idNum || "---"}\nالإصابة/ ${dash(p.injury)}\nنسبة التحمل : ${p.resp}\n`;
+  } else if (kind === "دراجة هوائية" || kind === "سكوتر") {
+    text += `${label} بقيادة/ ${dash(p.name)}\nالجنسية/ ${dash(p.nat)}\n${getIdTypeLabel(p.idNum)}/ ${p.idNum || "---"}\nالإصابة/ ${dash(p.injury)}\nنسبة التحمل : ${p.resp}\n`;
+  } else {
+    text += `${label} (${dash(p.car)})\nنسبة التحمل : ${p.resp}\n`;
+  }
+
+  if (p.companions.length > 0 && kind !== "جسم ثابت" && kind !== "حيوان") {
+    const multi = p.companions.length > 1;
+    text += multi ? `ويرافقه كلاً من :-\n` : `ويرافقه :\n`;
+    p.companions.forEach((c, ci) => {
+      text += (multi ? `${ci + 1}-/ ` : "") + `${dash(c.name)}\nالجنسية/ ${dash(c.nat)}\n${getIdTypeLabel(c.idNum)}/ ${c.idNum || "---"}\nالإصابة/ ${dash(c.injury)}\n`;
+    });
+  }
+  return text + "\n";
+}
+
+function buildReport() {
+  const partiesText = S.parties.map((p, i) => buildPartyText(p, i)).join("");
+  const dayName = weekdayName() || DAY_NAMES[new Date().getDay()];
+  const centerLine = (text, width = 40) =>
+    " ".repeat(Math.max(0, Math.floor((width - text.length) / 2))) + text;
+  const closing = [centerLine("*وددت إحاطة سعادتكم*"), centerLine("*وتقبلوا تحياتي*")].join("\n");
+  return `سعاده مدير ادارة مرور المنطقه الشرقيه سلمه الله.
+أحيط سعادتكم أنه في تمام الساعة (${formatTime12h(S.time)}) من هذا اليوم ${dayName} الموافق (${hijriDateStr()}) بـ ${S.locDesc || "---"} وقع حادث مروري عبارة عن (${S.incType || "---"}) وذلك على النحو التالي:-
+
+${partiesText}*وصف الحادث:*
+${S.description}
+
+*نتائج الحادث:*
+${S.results}
+
+*موقع الحادث :*
+${S.locationLink}
+
+*الاجراءات المتخذة:*
+تسجيل الحادث في نظام باشر برقم (${S.bashir || "---"})
+‏جاري إستكمال إجراءات الاستدلال والعمل جاري على إكمال اللازم .
+
+${closing}`;
+}
+
+// ===== الحالة =====
+const S = {
+  dark: false, hYear: 0, hMonth: 0, hDay: 0, time: "", locDesc: "", incType: "",
+  parties: [], description: "", results: "", locationLink: "", bashir: "",
+};
+// حالة وضع "أخرى" لكل حقل اختيار، تبقى عند إعادة الرسم
+const otherMap = new Map();
+
+// ===== قائمة منسدلة مع خيار "أخرى" يفتح حقل إدخال حر =====
+function choiceSelect(key, value, options, onChange) {
+  let cur = value;
+  let other = otherMap.has(key) ? otherMap.get(key) : (value !== "" && !options.includes(value));
+  const wrap = el("div");
+  const set = v => { cur = v; onChange(v); };
+  const render = () => {
+    wrap.textContent = "";
+    const sel = el("select", { className: "ctl" });
+    options.forEach(o => sel.append(el("option", { value: o, text: o })));
+    sel.append(el("option", { value: OTHER, text: "أخرى" }));
+    sel.value = other ? OTHER : cur;
+    sel.addEventListener("change", () => {
+      if (sel.value === OTHER) { other = true; otherMap.set(key, true); set(""); }
+      else { other = false; otherMap.set(key, false); set(sel.value); }
+      render();
+    });
+    wrap.append(sel);
+    if (other) {
+      wrap.append(el("input", {
+        className: "ctl otherInput", type: "text", placeholder: "اكتب الخيار", value: cur,
+        onInput: e => set(e.target.value),
+      }));
+    }
+  };
+  render();
+  return wrap;
+}
+
+// ===== بطاقة الطرف =====
+function partyCard(p, index) {
+  const ord = ARABIC_ORDINALS[index];
+  const kind = kindOf(p.type);
+  const isVehicle = kind === "مركبة" || kind === "دراجة نارية";
+  const isPedOrCycle = ["مشاة", "دراجة هوائية", "سكوتر"].includes(kind);
+  const isStaticOrAnimal = kind === "جسم ثابت" || kind === "حيوان";
+
+  const carLabel =
+    kind === "دراجة نارية" ? "نوع الدراجة:"
+    : kind === "جسم ثابت" ? "نوع الجسم الثابت:"
+    : kind === "حيوان" ? "نوع الحيوان:"
+    : "نوع المركبة:";
+  const carPlaceholder =
+    kind === "دراجة نارية" ? "بجاج بوكسر"
+    : kind === "جسم ثابت" ? "عمود إنارة، سياج حديدي …"
+    : kind === "حيوان" ? "حصان، جمل …"
+    : "تويوتا كامري";
+  const platePlaceholder = kind === "دراجة نارية" ? "ص ق 2026" : "ص ق ر 2026";
+
+  const txt = (obj, key, placeholder) => el("input", {
+    className: "ctl", type: "text", value: obj[key], placeholder,
+    onInput: e => { obj[key] = e.target.value; },
+  });
+  const field = (label, ...ctl) => el("div", { className: "field" }, el("label", { className: "label", text: label }), ...ctl);
+  const grid = (...kids) => el("div", { className: "grid2" }, ...kids);
+
+  const card = el("div", { className: "partyBox" });
+  if (index > 0) {
+    card.append(el("button", {
+      type: "button", className: "btn btnDanger btnIcon removeBtn", text: "×",
+      onClick: () => removeParty(p.id),
+    }));
+  }
+  card.append(el("div", { className: "sectionTitle sectionTitleFirst", text: `الطرف ${ord}` }));
+
+  card.append(field("تصنيف الطرف:", choiceSelect(p.id + ":type", p.type, PARTY_TYPES, v => {
+    const before = kind;
+    p.type = v;
+    if (kindOf(v) !== before) renderParties();
+  })));
+
+  if (!isPedOrCycle) {
+    const carField = field(carLabel, txt(p, "car", carPlaceholder));
+    card.append(isVehicle ? grid(carField, field("رقم اللوحة:", txt(p, "plate", platePlaceholder))) : grid(carField));
+  }
+
+  if (!isStaticOrAnimal) {
+    card.append(field("الاسم:", txt(p, "name", "خالد عبدالله")));
+    card.append(grid(
+      field("الجنسية:", txt(p, "nat", "سعودي")),
+      field("الهوية/الإقامة/الجواز:", txt(p, "idNum", "1055555555")),
+    ));
+  }
+
+  const row = [];
+  if (!isStaticOrAnimal) row.push(field("الإصابة:", choiceSelect(p.id + ":injury", p.injury, INJURY_OPTIONS, v => { p.injury = v; })));
+  if (isVehicle) row.push(field("التأمين:", choiceSelect(p.id + ":ins", p.ins, INSURANCE_OPTIONS, v => { p.ins = v; })));
+  card.append(grid(...row));
+
+  const resSel = el("select", { className: "ctl" });
+  RESPONSIBILITY_OPTIONS.forEach(o => resSel.append(el("option", { value: o, text: o })));
+  resSel.value = p.resp;
+  resSel.addEventListener("change", () => { p.resp = resSel.value; });
+  card.append(field("نسبة المسؤولية:", resSel));
+
+  p.companions.forEach(c => {
+    const item = el("div", { className: "companionItem" });
+    item.append(el("button", {
+      type: "button", className: "btn btnDanger btnIcon removeBtn companionRemove", text: "×",
+      onClick: () => { p.companions = p.companions.filter(x => x !== c); renderParties(); },
+    }));
+    item.append(field("اسم المرافق:", txt(c, "name", "خالد عبدالله")));
+    item.append(grid(
+      field("الجنسية:", txt(c, "nat", "سعودي")),
+      field("الهوية/الإقامة/الجواز:", txt(c, "idNum", "1055555555")),
+    ));
+    item.append(field("الإصابة:", choiceSelect(c.id + ":inj", c.injury, INJURY_OPTIONS, v => { c.injury = v; })));
+    card.append(item);
+  });
+
+  if (!isStaticOrAnimal) {
+    card.append(el("button", {
+      type: "button", className: "btn btnSecondary wide addCompBtn",
+      text: `+ إضافة مرافق للطرف ${ord}`,
+      onClick: () => { p.companions.push(newCompanion()); renderParties(); },
+    }));
+  }
+  return card;
+}
+
+function renderParties() {
+  const host = $("parties");
+  host.textContent = "";
+  S.parties.forEach((p, i) => host.append(partyCard(p, i)));
+  $("addParty").disabled = S.parties.length >= MAX_PARTIES;
+}
+
+function removeParty(id) {
+  S.parties = S.parties.filter(p => p.id !== id);
+  renderParties();
+}
+
+// ===== التاريخ =====
+function fillSelect(id, values, key) {
+  const sel = $(id);
+  sel.textContent = "";
+  values.forEach(n => sel.append(el("option", { value: String(n), text: String(n) })));
+  sel.value = String(S[key]);
+  sel.addEventListener("change", () => {
+    S[key] = Number(sel.value);
+    updateDateSummary();
+  });
+}
+
+function updateDateSummary() {
+  const box = $("dateSummary");
+  box.textContent = "";
+  const wd = weekdayName();
+  if (wd) box.append(el("span", { className: "weekday", text: wd }));
+  box.append(el("span", { text: hijriDateStr() }));
+}
+
+// ===== الحقول النصية =====
+const TEXT_FIELDS = [
+  ["locDesc", "locDesc"], ["incType", "incType"], ["desc", "description"],
+  ["results", "results"], ["link", "locationLink"], ["bashir", "bashir"], ["time", "time"],
+];
+
+function syncInputs() {
+  TEXT_FIELDS.forEach(([id, key]) => { $(id).value = S[key]; });
+  $("hDay").value = String(S.hDay);
+  $("hMonth").value = String(S.hMonth);
+  $("hYear").value = String(S.hYear);
+  updateDateSummary();
+  renderParties();
+}
+
+// ===== الوضع الليلي =====
+function applyTheme() {
+  document.documentElement.classList.toggle("dark", S.dark);
+  $("themeBtn").innerHTML = S.dark ? SUN_SVG : MOON_SVG;
+  $("themeBtn").setAttribute("aria-label", S.dark ? "الوضع النهاري" : "الوضع الليلي");
+}
+
+// ===== الخريطة (بدون مكتبات خارجية: بلاط OpenStreetMap مباشرة) =====
+const MAP_START = { lat: 26.4207, lng: 50.0888 };
+const TILE = 256;
+const mapState = { lat: MAP_START.lat, lng: MAP_START.lng, zoom: 12, marker: null };
+let mapEl, mapLayer, mapMarkerEl;
+let drag = null;
+
+function lngToX(lng, z) { return (lng + 180) / 360 * TILE * Math.pow(2, z); }
+function latToY(lat, z) {
+  const rad = lat * Math.PI / 180;
+  return (1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2 * TILE * Math.pow(2, z);
+}
+function xToLng(x, z) { return x / (TILE * Math.pow(2, z)) * 360 - 180; }
+function yToLat(y, z) {
+  const n = Math.PI - 2 * Math.PI * y / (TILE * Math.pow(2, z));
+  return 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+}
+
+function renderMap() {
+  const W = mapEl.clientWidth, H = mapEl.clientHeight;
+  const z = mapState.zoom;
+  const n = Math.pow(2, z);
+  const left = lngToX(mapState.lng, z) - W / 2;
+  const top = latToY(mapState.lat, z) - H / 2;
+
+  mapLayer.textContent = "";
+  const x0 = Math.floor(left / TILE), x1 = Math.floor((left + W) / TILE);
+  const y0 = Math.max(0, Math.floor(top / TILE)), y1 = Math.min(n - 1, Math.floor((top + H) / TILE));
+  for (let ty = y0; ty <= y1; ty++) {
+    for (let tx = x0; tx <= x1; tx++) {
+      const wx = ((tx % n) + n) % n;
+      const img = document.createElement("img");
+      img.className = "mapTile";
+      img.draggable = false;
+      img.alt = "";
+      img.src = `https://tile.openstreetmap.org/${z}/${wx}/${ty}.png`;
+      img.style.left = (tx * TILE - left) + "px";
+      img.style.top = (ty * TILE - top) + "px";
+      mapLayer.append(img);
+    }
+  }
+
+  if (mapState.marker) {
+    mapMarkerEl.hidden = false;
+    mapMarkerEl.style.left = (lngToX(mapState.marker.lng, z) - left) + "px";
+    mapMarkerEl.style.top = (latToY(mapState.marker.lat, z) - top) + "px";
+  } else {
+    mapMarkerEl.hidden = true;
+  }
+}
+
+function setMarker(lat, lng) {
+  mapState.marker = { lat, lng };
+  S.locationLink = `https://www.google.com/maps?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+  $("link").value = S.locationLink;
+  renderMap();
+}
+
+function changeZoom(delta) {
+  mapState.zoom = Math.min(18, Math.max(3, mapState.zoom + delta));
+  renderMap();
+}
+
+function onPointerDown(e) {
+  if (e.target.closest(".mapCtrl")) return;
+  drag = { x: e.clientX, y: e.clientY, moved: false };
+  mapEl.setPointerCapture(e.pointerId);
+}
+
+function onPointerMove(e) {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) < 6) return;
+  drag.moved = true;
+  const z = mapState.zoom;
+  const x = lngToX(mapState.lng, z) - dx;
+  const y = latToY(mapState.lat, z) - dy;
+  mapState.lng = xToLng(x, z);
+  mapState.lat = yToLat(y, z);
+  drag.x = e.clientX;
+  drag.y = e.clientY;
+  renderMap();
+}
+
+function onPointerUp(e) {
+  if (!drag) return;
+  if (!drag.moved) {
+    // نقرة بدون سحب: تحديد موقع الحادث
+    const rect = mapEl.getBoundingClientRect();
+    const z = mapState.zoom;
+    const W = mapEl.clientWidth, H = mapEl.clientHeight;
+    const px = lngToX(mapState.lng, z) - W / 2 + (e.clientX - rect.left);
+    const py = latToY(mapState.lat, z) - H / 2 + (e.clientY - rect.top);
+    setMarker(yToLat(py, z), xToLng(px, z));
+  }
+  drag = null;
+}
+
+function initMap() {
+  mapEl = $("map");
+  mapLayer = $("mapLayer");
+  mapMarkerEl = $("mapMarker");
+
+  mapEl.addEventListener("pointerdown", onPointerDown);
+  mapEl.addEventListener("pointermove", onPointerMove);
+  mapEl.addEventListener("pointerup", onPointerUp);
+  mapEl.addEventListener("pointercancel", () => { drag = null; });
+  $("zoomIn").addEventListener("click", () => changeZoom(1));
+  $("zoomOut").addEventListener("click", () => changeZoom(-1));
+
+  $("mapToggle").addEventListener("click", () => {
+    const full = !$("mapWrap").classList.contains("mapFull");
+    $("mapWrap").classList.toggle("mapFull", full);
+    $("mapToggle").innerHTML = full ? "×" : EXPAND_SVG;
+    $("mapToggle").setAttribute("aria-label", full ? "إغلاق ملء الشاشة" : "ملء الشاشة");
+    setTimeout(renderMap, 0);
+  });
+  window.addEventListener("resize", renderMap);
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      mapState.lat = pos.coords.latitude;
+      mapState.lng = pos.coords.longitude;
+      mapState.zoom = 15;
+      renderMap();
+    }, () => {});
+  }
+  renderMap();
+}
+
+// ===== النسخ والإشعارات =====
+let toastTimer = null;
+function toast(msg, ok) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.toggle("error", !ok);
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+async function copyReport() {
+  const text = buildReport();
+  try {
+    await navigator.clipboard.writeText(text);
+    toast("تم نسخ الإشعارية بنجاح!", true);
+  } catch (_) {
+    // احتياط للمتصفحات التي لا تدعم Clipboard API
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.append(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      toast(ok ? "تم نسخ الإشعارية بنجاح!" : "تعذر النسخ إلى الحافظة", ok);
+    } catch (__) {
+      toast("تعذر النسخ إلى الحافظة", false);
+    }
+  }
+}
+
+function resetAll() {
+  if (!window.confirm("هل أنت متأكد من مسح جميع البيانات؟")) return;
+  const t = getHijriParts(new Date());
+  S.hYear = t.y; S.hMonth = t.m; S.hDay = t.d;
+  S.time = nowHHMM();
+  S.locDesc = ""; S.incType = ""; S.description = ""; S.results = "";
+  S.locationLink = ""; S.bashir = "";
+  S.parties = [newParty(), newParty()];
+  otherMap.clear();
+  mapState.marker = null;
+  renderMap();
+  syncInputs();
+}
+
+// ===== التهيئة =====
+function init() {
+  const t = getHijriParts(new Date());
+  S.hYear = t.y; S.hMonth = t.m; S.hDay = t.d;
+  S.time = nowHHMM();
+  S.parties = [newParty(), newParty()];
+
+  fillSelect("hDay", HIJRI_DAYS, "hDay");
+  fillSelect("hMonth", HIJRI_MONTHS, "hMonth");
+  fillSelect("hYear", HIJRI_YEARS, "hYear");
+
+  TEXT_FIELDS.forEach(([id, key]) => {
+    $(id).value = S[key];
+    $(id).addEventListener("input", e => { S[key] = e.target.value; });
+  });
+
+  $("themeBtn").addEventListener("click", () => { S.dark = !S.dark; applyTheme(); });
+  $("addParty").addEventListener("click", () => {
+    if (S.parties.length < MAX_PARTIES) { S.parties.push(newParty()); renderParties(); }
+  });
+  $("copyBtn").addEventListener("click", copyReport);
+  $("previewBtn").addEventListener("click", () => {
+    $("fsBody").textContent = buildReport();
+    $("fullscreen").hidden = false;
+  });
+  $("fsClose").addEventListener("click", () => { $("fullscreen").hidden = true; });
+  $("clearBtn").addEventListener("click", resetAll);
+
+  applyTheme();
+  updateDateSummary();
+  renderParties();
+  $("mapToggle").innerHTML = EXPAND_SVG;
+  initMap();
+}
+
+init();
+</script>
+</body>
+</html>
