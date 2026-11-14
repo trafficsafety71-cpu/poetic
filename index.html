@@ -220,7 +220,7 @@ textarea.ctl { resize: vertical; }
 
     <div class="sectionTitle">بيانات الحادث</div>
     <div class="field">
-      <label class="label" for="locDesc">وصف الموقع:</label>
+      <label class="label" for="locDesc">موقع الحادث:</label>
       <input class="ctl" type="text" id="locDesc" placeholder="حي بدر شارع ابو بكر الصديق بأتجاه الشمال …">
     </div>
     <div class="field">
@@ -419,8 +419,10 @@ function buildReport() {
   const centerLine = (text, width = 40) =>
     " ".repeat(Math.max(0, Math.floor((width - text.length) / 2))) + text;
   const closing = [centerLine("*وددت إحاطة سعادتكم*"), centerLine("*وتقبلوا تحياتي*")].join("\n");
-  return `سعاده مدير ادارة مرور المنطقه الشرقيه سلمه الله.
-أحيط سعادتكم أنه في تمام الساعة (${formatTime12h(S.time)}) من هذا اليوم ${dayName} الموافق (${hijriDateStr()}) بـ ${S.locDesc || "---"} وقع حادث مروري عبارة عن (${S.incType || "---"}) وذلك على النحو التالي:-
+  return `*سعادة مدير شرطة المنطقة الشرقية سلمه الله*
+*سعادة مدير الإدارة العامة للمرور سلمه الله*
+
+أحيط سعادتكم أنه في تمام الساعة (${formatTime12h(S.time)}) من هذا اليوم ${dayName} الموافق (${hijriDateStr()}) ${S.locDesc || "---"} وقع حادث مروري عبارة عن (${S.incType || "---"}) وذلك على النحو التالي:-
 
 ${partiesText}*وصف الحادث:*
 ${S.description}
@@ -640,14 +642,18 @@ function yToLat(y, z) {
 
 function renderMap() {
   const W = mapEl.clientWidth, H = mapEl.clientHeight;
-  const z = mapState.zoom;
-  const n = Math.pow(2, z);
-  const left = lngToX(mapState.lng, z) - W / 2;
-  const top = latToY(mapState.lat, z) - H / 2;
+  const zf = mapState.zoom;
+  const z0 = Math.floor(zf);
+  const k = Math.pow(2, zf - z0);          // عامل التكبير السلس بين مستويين
+  const n = Math.pow(2, z0);
+  const cx = lngToX(mapState.lng, z0), cy = latToY(mapState.lat, z0);
+  const left = cx - W / (2 * k), top = cy - H / (2 * k);
+  const visW = W / k, visH = H / k;
 
+  mapLayer.style.transform = `scale(${k})`;
   mapLayer.textContent = "";
-  const x0 = Math.floor(left / TILE), x1 = Math.floor((left + W) / TILE);
-  const y0 = Math.max(0, Math.floor(top / TILE)), y1 = Math.min(n - 1, Math.floor((top + H) / TILE));
+  const x0 = Math.floor(left / TILE), x1 = Math.floor((left + visW) / TILE);
+  const y0 = Math.max(0, Math.floor(top / TILE)), y1 = Math.min(n - 1, Math.floor((top + visH) / TILE));
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       const wx = ((tx % n) + n) % n;
@@ -655,7 +661,7 @@ function renderMap() {
       img.className = "mapTile";
       img.draggable = false;
       img.alt = "";
-      img.src = `https://tile.openstreetmap.org/${z}/${wx}/${ty}.png`;
+      img.src = `https://tile.openstreetmap.org/${z0}/${wx}/${ty}.png`;
       img.style.left = (tx * TILE - left) + "px";
       img.style.top = (ty * TILE - top) + "px";
       mapLayer.append(img);
@@ -664,8 +670,8 @@ function renderMap() {
 
   if (mapState.marker) {
     mapMarkerEl.hidden = false;
-    mapMarkerEl.style.left = (lngToX(mapState.marker.lng, z) - left) + "px";
-    mapMarkerEl.style.top = (latToY(mapState.marker.lat, z) - top) + "px";
+    mapMarkerEl.style.left = ((lngToX(mapState.marker.lng, z0) - left) * k) + "px";
+    mapMarkerEl.style.top = ((latToY(mapState.marker.lat, z0) - top) * k) + "px";
   } else {
     mapMarkerEl.hidden = true;
   }
@@ -678,57 +684,147 @@ function setMarker(lat, lng) {
   renderMap();
 }
 
-function changeZoom(delta) {
-  mapState.zoom = Math.min(18, Math.max(3, mapState.zoom + delta));
+function localPos(clientX, clientY) {
+  const rect = mapEl.getBoundingClientRect();
+  return { x: clientX - rect.left - mapEl.clientLeft, y: clientY - rect.top - mapEl.clientTop };
+}
+
+// تكبير/تصغير مع إبقاء النقطة تحت الإصبع أو المؤشر في مكانها
+function zoomAt(delta, clientX, clientY) {
+  const z1 = mapState.zoom;
+  const z2 = Math.min(18, Math.max(3, z1 + delta));
+  if (Math.abs(z2 - z1) < 1e-6) return;
+  const W = mapEl.clientWidth, H = mapEl.clientHeight;
+  const p = localPos(clientX, clientY);
+  const ax = lngToX(mapState.lng, z1) - W / 2 + p.x;
+  const ay = latToY(mapState.lat, z1) - H / 2 + p.y;
+  const alng = xToLng(ax, z1), alat = yToLat(ay, z1);
+  const cx = lngToX(alng, z2) - p.x + W / 2;
+  const cy = latToY(alat, z2) - p.y + H / 2;
+  mapState.zoom = z2;
+  mapState.lng = xToLng(cx, z2);
+  mapState.lat = yToLat(cy, z2);
   renderMap();
+}
+
+function animateZoom(delta, clientX, clientY) {
+  const start = mapState.zoom;
+  const target = Math.min(18, Math.max(3, start + delta));
+  const t0 = performance.now();
+  let prev = start;
+  const step = now => {
+    const t = Math.min(1, (now - t0) / 220);
+    const ease = 1 - Math.pow(1 - t, 3);
+    const z = start + (target - start) * ease;
+    zoomAt(z - prev, clientX, clientY);
+    prev = z;
+    if (t < 1) requestAnimationFrame(step);
+    else persist();
+  };
+  requestAnimationFrame(step);
+}
+
+function zoomCenter(delta) {
+  const r = mapEl.getBoundingClientRect();
+  animateZoom(delta, r.left + mapEl.clientLeft + mapEl.clientWidth / 2, r.top + mapEl.clientTop + mapEl.clientHeight / 2);
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  const d = Math.max(-1, Math.min(1, -e.deltaY * 0.0025));
+  zoomAt(d, e.clientX, e.clientY);
+  persist();
+}
+
+const pointers = new Map();
+let pinch = null;
+
+function placeMarkerAt(clientX, clientY) {
+  const p = localPos(clientX, clientY);
+  const zf = mapState.zoom, z0 = Math.floor(zf), k = Math.pow(2, zf - z0);
+  const W = mapEl.clientWidth, H = mapEl.clientHeight;
+  const cx = lngToX(mapState.lng, z0), cy = latToY(mapState.lat, z0);
+  const px = cx - W / (2 * k) + p.x / k;
+  const py = cy - H / (2 * k) + p.y / k;
+  setMarker(yToLat(py, z0), xToLng(px, z0));
 }
 
 function onPointerDown(e) {
   if (e.target.closest(".mapCtrl")) return;
-  drag = { x: e.clientX, y: e.clientY, moved: false };
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   mapEl.setPointerCapture(e.pointerId);
+  if (pointers.size === 2) {
+    // إصبعان: وضع التكبير بالقرص (pinch)
+    const [a, b] = [...pointers.values()];
+    pinch = { dist: Math.hypot(a.x - b.x, a.y - b.y) };
+    drag = null;
+  } else if (pointers.size === 1) {
+    drag = { x: e.clientX, y: e.clientY, moved: false };
+  }
 }
 
 function onPointerMove(e) {
-  if (!drag) return;
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size >= 2 && pinch) {
+    const [a, b] = [...pointers.values()];
+    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    if (pinch.dist > 0 && dist > 0) {
+      zoomAt(Math.log2(dist / pinch.dist), mx, my);
+      pinch.dist = dist;
+    }
+    return;
+  }
+  if (!drag || pointers.size !== 1) return;
   const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
   if (!drag.moved && Math.hypot(dx, dy) < 6) return;
   drag.moved = true;
   const z = mapState.zoom;
-  const x = lngToX(mapState.lng, z) - dx;
-  const y = latToY(mapState.lat, z) - dy;
-  mapState.lng = xToLng(x, z);
-  mapState.lat = yToLat(y, z);
+  mapState.lng = xToLng(lngToX(mapState.lng, z) - dx, z);
+  mapState.lat = yToLat(latToY(mapState.lat, z) - dy, z);
   drag.x = e.clientX;
   drag.y = e.clientY;
   renderMap();
 }
 
 function onPointerUp(e) {
-  if (!drag) return;
-  if (!drag.moved) {
-    // نقرة بدون سحب: تحديد موقع الحادث
-    const rect = mapEl.getBoundingClientRect();
-    const z = mapState.zoom;
-    const W = mapEl.clientWidth, H = mapEl.clientHeight;
-    const px = lngToX(mapState.lng, z) - W / 2 + (e.clientX - rect.left);
-    const py = latToY(mapState.lat, z) - H / 2 + (e.clientY - rect.top);
-    setMarker(yToLat(py, z), xToLng(px, z));
+  const hadPinch = pinch !== null;
+  pointers.delete(e.pointerId);
+  if (pointers.size === 0) {
+    // نقرة بدون سحب ولا قرص: تحديد موقع الحادث
+    if (drag && !drag.moved && !hadPinch) placeMarkerAt(e.clientX, e.clientY);
+    drag = null;
+    pinch = null;
+  } else if (pointers.size < 2) {
+    pinch = null;
   }
+}
+
+function onPointerCancel() {
+  pointers.clear();
   drag = null;
+  pinch = null;
 }
 
 function initMap() {
   mapEl = $("map");
   mapLayer = $("mapLayer");
   mapMarkerEl = $("mapMarker");
+  mapLayer.style.transformOrigin = "0 0";
 
   mapEl.addEventListener("pointerdown", onPointerDown);
   mapEl.addEventListener("pointermove", onPointerMove);
   mapEl.addEventListener("pointerup", onPointerUp);
-  mapEl.addEventListener("pointercancel", () => { drag = null; });
-  $("zoomIn").addEventListener("click", () => changeZoom(1));
-  $("zoomOut").addEventListener("click", () => changeZoom(-1));
+  mapEl.addEventListener("pointerup", persist);
+  mapEl.addEventListener("pointercancel", onPointerCancel);
+  mapEl.addEventListener("wheel", onWheel, { passive: false });
+  mapEl.addEventListener("dblclick", e => {
+    if (e.target.closest(".mapCtrl")) return;
+    animateZoom(1, e.clientX, e.clientY);
+  });
+  $("zoomIn").addEventListener("click", () => zoomCenter(1));
+  $("zoomOut").addEventListener("click", () => zoomCenter(-1));
 
   $("mapToggle").addEventListener("click", () => {
     const full = !$("mapWrap").classList.contains("mapFull");
@@ -739,7 +835,7 @@ function initMap() {
   });
   window.addEventListener("resize", renderMap);
 
-  if (navigator.geolocation) {
+  if (navigator.geolocation && !restoredMap) {
     navigator.geolocation.getCurrentPosition(pos => {
       mapState.lat = pos.coords.latitude;
       mapState.lng = pos.coords.longitude;
@@ -798,12 +894,53 @@ function resetAll() {
   syncInputs();
 }
 
+// ===== الحفظ التلقائي في المتصفح (لا يُمسح عند الإغلاق أو التحديث) =====
+const STORE_KEY = "incident-notice-state-v1";
+let restoredMap = false;
+
+function persist() {
+  try {
+    const data = {
+      S: { ...S },
+      otherMap: [...otherMap.entries()],
+      map: { lat: mapState.lat, lng: mapState.lng, zoom: mapState.zoom, marker: mapState.marker },
+    };
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  } catch (_) { /* التخزين غير متاح: تعمل الصفحة بدونه */ }
+}
+
+function restore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !data.S) return false;
+    Object.assign(S, data.S);
+    if (!Array.isArray(S.parties) || S.parties.length === 0) S.parties = [newParty(), newParty()];
+    (data.otherMap || []).forEach(([k, v]) => otherMap.set(k, v));
+    if (data.map) {
+      Object.assign(mapState, data.map);
+      restoredMap = true;
+    }
+    // منع تكرار المعرّفات بعد الاستعادة
+    (raw.match(/"k(\d+)"/g) || []).forEach(t => {
+      const n = parseInt(t.slice(2, -1), 10);
+      if (n > uid) uid = n;
+    });
+    return true;
+  } catch (_) { return false; }
+}
+
 // ===== التهيئة =====
 function init() {
-  const t = getHijriParts(new Date());
-  S.hYear = t.y; S.hMonth = t.m; S.hDay = t.d;
-  S.time = nowHHMM();
-  S.parties = [newParty(), newParty()];
+  const restored = restore();
+  if (!restored) {
+    const t = getHijriParts(new Date());
+    S.hYear = t.y; S.hMonth = t.m; S.hDay = t.d;
+    S.time = nowHHMM();
+    S.parties = [newParty(), newParty()];
+  }
+
 
   fillSelect("hDay", HIJRI_DAYS, "hDay");
   fillSelect("hMonth", HIJRI_MONTHS, "hMonth");
@@ -825,6 +962,10 @@ function init() {
   });
   $("fsClose").addEventListener("click", () => { $("fullscreen").hidden = true; });
   $("clearBtn").addEventListener("click", resetAll);
+
+  document.addEventListener("input", persist);
+  document.addEventListener("change", persist);
+  document.addEventListener("click", persist);
 
   applyTheme();
   updateDateSummary();
